@@ -76,8 +76,8 @@ app.post('/register',  (req, res) => {
 
 
 app.all('*', async (req, res) => {
-    console.log(req.headers)
     console.log('authenticate token')
+    if(req.body.url){
         const response = await axios({
             method: req.method,
             url: `http://localhost:3002${req.body.url}`,
@@ -88,7 +88,11 @@ app.all('*', async (req, res) => {
             },
             withCredentials: true
         })
-    res.json(response.data)
+        res.json(response.data)
+    } else{
+        console.log('Incorrect request attempt')
+    }
+
 
 })
 
