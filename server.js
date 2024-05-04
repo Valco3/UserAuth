@@ -21,6 +21,7 @@ let notes = [
 
 app.post('/notes', async (req, res) => {
     console.log('Reached main server though middleware')
+    console.log(req.user)
     // console.log(String(req.headers.cookie))
     let cookiesSplit =  await handleCookies(String(req.headers.cookie))
     // console.log(splitCookies)

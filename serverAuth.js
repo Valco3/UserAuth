@@ -37,20 +37,20 @@ app.post('/register',  (req, res) => {
     //get data from request
     let userData = req.body;
     //check if credentials exist 
-    if(registeredUsers.filter(user => user.email === userData.email).length > 0){
+    if(registeredUsers.filter(user => user.email === userData.email || user.username === userData.username).length > 0){
         console.log('user exists')
         //send res
-        res.status(403).json({error: 'User with that email already exists'})
+        res.status(403).json({error: 'User with the same username / email already exists'})
     }else{
         console.log('user does not exist')
         
         //add user to database
         registeredUsers.push(userData);
-        console.log(registeredUsers)
+        // console.log(registeredUsers)
 
         //generate token and resfresh token
         let access_token = generateAccessToken({username: userData.username});
-        console.log(access_token);
+        // console.log(access_token);
         
         
 
@@ -63,7 +63,7 @@ app.post('/register',  (req, res) => {
             httpOnly: true
         })
         refreshTokens.push(refresh_token);
-        console.log(refreshTokens);
+        // console.log(refreshTokens);
 
         res.cookie('username', userData.username)
 
@@ -75,10 +75,33 @@ app.post('/register',  (req, res) => {
 
 
 
-app.all('*', async (req, res) => {
-    console.log('authenticate token')
+// app.all('*', async (req, res) => {
+//     console.log('authenticate token')
+//     if(req.body.url){
+//         const response = await axios({
+//             method: req.method,
+//             url: `http://localhost:3002${req.body.url}`,
+//             data: req.body,
+//             headers: {
+//                 'Authorization': `Bearer ${req.cookies.access_token}`,
+//                 'Cookie': req.headers.cookie
+//             },
+//             withCredentials: true
+//         })
+//         res.json(response.data)
+//     } else{
+//         console.log('Incorrect request attempt')
+//     }
+
+
+// })
+
+app.all('/api/*',  authenticateToken , async (req, res) => {
+    console.log('call to main server')
+    console.log(req.user)
     if(req.body.url){
         const response = await axios({
+            user: req.user,
             method: req.method,
             url: `http://localhost:3002${req.body.url}`,
             data: req.body,
@@ -104,6 +127,42 @@ function generateAccessToken(user){
 
 function generateRefreshToken(user){
     return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET)
+}
+
+function authenticateToken(req, res, next){
+    let cookiesSplit = handleCookies(req.headers.cookie)
+    if(cookiesSplit.access_token == null) return res.sendStatus(401)
+
+    jwt.verify(cookiesSplit.access_token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        console.log(err)
+        if(err){
+            if(cookiesSplit.refresh_token == null) return res.sendStatus(401);
+            if(!refreshTokens.includes(cookiesSplit.refresh_token)) return res.sendStatus(403);
+            jwt.verify(cookiesSplit.refresh_token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+                console.log('token expired. Generating new token')
+                const access_token = generateAccessToken({username: cookiesSplit.username})
+                console.log(access_token)
+                res.cookie('access_token', access_token, {
+                    httpOnly: true
+                })
+            })
+        }
+        console.log('ok token')
+        req.user = user
+        next()
+    })
+}
+
+
+function handleCookies(cookiesString){
+
+
+    const table = cookiesString.split("; ") 
+    .map(pair => pair.split("="));
+
+    const result = Object.fromEntries(table);
+
+   return result;
 }
 
 app.listen(3001)
