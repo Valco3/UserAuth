@@ -7,9 +7,6 @@ fetch('http://localhost:3001/api/notes', {
     },
     body: JSON.stringify(
         {
-            username: 'Tosho',
-            email: 'tosho@gmail.com',
-            password: 'toshoPass',
             url: '/notes'
         }
     )

@@ -36,6 +36,9 @@ app.post('/register',  (req, res) => {
     // console.log(req.body);
     //get data from request
     let userData = req.body;
+    if(userData.password === '' || userData.email === '' || userData.username === ''){
+        return res.status(403).json({error: 'Invalid email/password/username'})
+    }
     //check if credentials exist 
     if(registeredUsers.filter(user => user.email === userData.email || user.username === userData.username).length > 0){
         console.log('user exists')
@@ -73,6 +76,47 @@ app.post('/register',  (req, res) => {
     
 })
 
+app.post('/login', async  (req, res) => {
+    // console.log(req.body);
+    //get data from request
+    let userData = req.body;
+    if(userData.password === null || userData.email === null){
+        return res.status(403).json({error: 'Invalid email/password'})
+    }
+    //check if credentials exist 
+    if(registeredUsers.filter(user => user.email === userData.email && user.password === userData.password).length > 0){
+        console.log('valid login credentials')
+        //send res
+        let username =  registeredUsers.filter(user => user.email === userData.email && user.password === userData.password)[0].username;
+        console.log(username)
+        let access_token = generateAccessToken({username: username});
+
+        
+        res.cookie('access_token', access_token, {
+            httpOnly: true
+        })
+
+        let refresh_token = generateRefreshToken({username: username});
+        res.cookie('refresh_token', refresh_token, {
+            httpOnly: true
+        })
+        refreshTokens.push(refresh_token);
+        // console.log(refreshTokens);
+
+        res.cookie('username', username)
+
+
+        res.json({success: true, redirect: 'http://localhost:3001/logged'})
+    }else{
+        console.log('invalid login credentials')
+        
+
+
+        res.status(403).json({error: 'Invalid email/password'})
+
+    }
+    
+})
 
 
 // app.all('*', async (req, res) => {
