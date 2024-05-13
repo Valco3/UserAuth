@@ -15,3 +15,16 @@ fetch('http://localhost:3001/api/notes', {
         data.forEach(note => console.log(note))
     }
 })
+
+function logout(){
+    fetch('http://localhost:3001/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(res => res.json()).then(data => {
+        if(data.success){
+            window.location.href = data.redirect
+        }
+    })
+}

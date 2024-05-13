@@ -118,27 +118,24 @@ app.post('/login', async  (req, res) => {
     
 })
 
+//
 
-// app.all('*', async (req, res) => {
-//     console.log('authenticate token')
-//     if(req.body.url){
-//         const response = await axios({
-//             method: req.method,
-//             url: `http://localhost:3002${req.body.url}`,
-//             data: req.body,
-//             headers: {
-//                 'Authorization': `Bearer ${req.cookies.access_token}`,
-//                 'Cookie': req.headers.cookie
-//             },
-//             withCredentials: true
-//         })
-//         res.json(response.data)
-//     } else{
-//         console.log('Incorrect request attempt')
-//     }
+app.post('/continue', authenticateToken, (req, res) => {
+    console.log('attempted to continute session')
+    res.json({success: true, redirect: 'http://localhost:3001/logged'})
+})
 
+//
 
-// })
+app.post('/logout', authenticateToken, (req, res) => {
+    console.log(`attempted to log out`);
+    let cookiesSplit = handleCookies(req.headers.cookie);
+    refreshTokens = refreshTokens.filter(token => token != String(cookiesSplit.refresh_token));
+    res.clearCookie('access_token');
+    res.clearCookie('refresh_token');
+    res.clearCookie('username')
+    res.json({success: true, redirect: 'http://localhost:3001/'})
+})
 
 app.all('/api/*',  authenticateToken , async (req, res) => {
     console.log('call to main server')

@@ -1,3 +1,16 @@
+fetch('http://localhost:3001/continue', {
+    method: `POST`,
+    headers: {
+        'Content-Type': 'application/json',
+    }
+}).then(res => res.json()).then(data => {
+    if(data.success){
+        window.location.href = data.redirect;
+    }else{
+        console.log(`can not continue previous session`);
+    }
+    
+})
 
 function register(){
     let email = document.getElementById('registerEmail').value;
