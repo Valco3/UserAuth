@@ -71,3 +71,15 @@ function login(){
         }
     })
 }
+
+//////////////
+
+const changeToLogin = () => {
+    document.querySelector('.login').style.display = 'block';
+    document.querySelector('.register').style.display = 'none';
+};
+
+const changeToRegister = () => {
+    document.querySelector('.login').style.display = 'none';
+    document.querySelector('.register').style.display = 'block';
+};

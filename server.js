@@ -16,26 +16,27 @@ let notes = [
         username: 'Misho',
         title: 'Title2',
         text: 'This is my note (Misho)'
+    },
+    {
+        username: 'Tosho',
+        title: 'Title 3',
+        text: 'Here is another note'
     }
 ]
 
 app.post('/notes', async (req, res) => {
     console.log('Reached main server though middleware')
-    // console.log(req.user)
-    // console.log(String(req.headers.cookie))
     let cookiesSplit =  await handleCookies(String(req.headers.cookie))
     console.log(cookiesSplit)
-    // console.log(splitCookies)
     let validNotes = notes.filter(note => note.username === cookiesSplit.username)
-    // res.send('Getting Notes')
     res.send(validNotes)
 })
 
 function handleCookies(cookiesString){
 
 
-    const table = cookiesString.split("; ") // split by semicolon and space
-    .map(pair => pair.split("=")); // split each pair by equals sign
+    const table = cookiesString.split("; ")
+    .map(pair => pair.split("="));
 
     const result = Object.fromEntries(table);
 
